@@ -5,10 +5,12 @@ var canvas, ctx, cw, ch ;
 var tank, enemy, tanks= [], murs, mur1, briques = [], tirs = [];
 var inputStates = {};
 
+var originatingPositions;
+
 /* Sons */
 var laserSon, explosionSon, briqueCasseSon;
 
-function Tank(_x,_y,_n){
+function Tank(_x,_y,_n,clr){
 	this.width = Tank.width;
 	this.x = _x;
 	this.y = _y;
@@ -19,6 +21,7 @@ function Tank(_x,_y,_n){
 	this.hp = Number.POSITIVE_INFINITY;
 	this.enemy = true;
 	this.nom = _n;
+	this.couleur = clr;
 }
 
 
@@ -33,8 +36,9 @@ Tank.prototype.dessine = function() {
 		ctx.translate(-this.x - this.width/2,-this.y - this.width/2);
 	} 
 	ctx.translate(this.x,this.y);
-	if(this.enemy) ctx.fillStyle = "violet";
-	else ctx.fillStyle="green";
+	/*if(this.enemy) ctx.fillStyle = "violet";
+	else ctx.fillStyle="green";*/
+	ctx.fillStyle = this.couleur;
 	ctx.fillRect(0,width/3,width/3,2*width/3);
 	ctx.fillRect(width/3,0,width/3,2*width/3);
 	ctx.fillRect(2*width/3,width/3,width/3,2*width/3);
@@ -76,7 +80,7 @@ Tank.prototype.collidesWithBriquesOrTanks = function() {
 	if(solidesIncludingThis.length == solides.length) { console.log("filter did not work oo filter did not workd");}
 	else {/*console.log("filter workd : " + solides.length + "/" + solidesIncludingThis.length);*/ }
 	for(var i = 0; i < solides.length; i++) {
-		if(this.collidesWith(solides[i])) { console.log("collidesWith " + solides[i]); return true;}
+		if(this.collidesWith(solides[i])) { /*console.log("collidesWith " + solides[i]);*/ return true;}
 	}
 	return false;
 };
@@ -248,6 +252,7 @@ function mainLoop(time) {
 	for(var ktd = tirIndicesToBeRemoved.length - 1; ktd >= 0; ktd--) {
 		tirs.splice(tirIndicesToBeRemoved[ktd],1);
 	}
+	//console.log(socket);
 	requestAnimationFrame(mainLoop);
 };
 
@@ -430,13 +435,15 @@ function start() {
 	ctx = canvas.getContext('2d');
 	cw = canvas.width;
 	ch = canvas.height;
+
+	originatingPositions = [{x:(cw/2),y:(ch-45),clr:"#3523af"},{x:10,y:10}];
 	tank = new Tank(cw/2, ch-42-3, "Sharpie");
 	tank.enemy = false;
 	//tank.setNom("FuFu");
 	enemy = new Tank(cw/2, 0,"Alcatel");
 	//enemy.setNom("Alcatel");
 	console.log(tank);
-	tanks = [tank,enemy];
+	//tanks = [tank,enemy];
 	console.log(tank.nom);
 	console.log(enemy.nom);
 	//return;
@@ -491,7 +498,17 @@ function start() {
 
 
 
-
 window.onload = function init() {
 	start();
 }
+
+socket.on('addtank', function(data) {
+	console.log("nouveau tank a rajouter");
+	console.log(tanks.length);
+	var pos = originatingPositions[tanks.length];
+	console.log(pos);
+	console.log("x: " + pos.x + ", y: " + pos.y);
+	tanks.push(new Tank(pos.x, pos.y, monVraiNom, pos.clr));
+	console.log("nouveau tank a ete rajouter");
+
+});

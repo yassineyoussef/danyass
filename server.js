@@ -16,11 +16,12 @@ app.use(express.static(__dirname + '/'));
 
 // routing
 app.get('/', function (req, res) {
-  res.sendfile(__dirname + '/simpleChat.html');
+  res.sendfile(__dirname + '/index.html');
 });
 
 // usernames which are currently connected to the chat
-var usernames = {};
+var usernames = {numPlayers:0};
+var tanks = [];
 
 io.sockets.on('connection', function (socket) {
 
@@ -34,12 +35,18 @@ io.sockets.on('connection', function (socket) {
 	socket.on('adduser', function(username){
 		// we store the username in the socket session for this client
 		socket.username = username;
+		if(usernames.numPlayers > 4) {
+			socket.emit('refuse','les 4 joueurs sont la');
+			return;
+		}
 		// add the client's username to the global list
 		usernames[username] = username;
+		++usernames.numPlayers;
+		//console.log(usernames.numPlayers);
 		// echo to client they've connected
-		socket.emit('updatechat', 'SERVER', 'you have connected');
+		socket.emit('addtank', {message: username + ' added', tanks: []});
 		// echo globally (all clients) that a person has connected
-		socket.broadcast.emit('updatechat', 'SERVER', username + ' has connected');
+		socket.broadcast.emit('addtank', 'SERVER', username + ' has connected');
 		// update the list of users in chat, client-side
 		io.sockets.emit('updateusers', usernames);
 	});

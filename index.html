@@ -12,7 +12,6 @@
 		}
 	</style>
 
-	<script src="complete_rewrite_battle.js"></script>
 
 <body>
 
@@ -21,21 +20,20 @@
 	<script src = "jquery-1.12.1.min.js">
 	</script>
 
-	<script src = "/socket.io/socket.io.js">
-		
-
-	</script>
+	<script src = "/socket.io/socket.io.js"></script>
 	<script>
 		    //require('socket.io-client');
 			//console.log(io());
 			//console.log(io.Socket());
 			//return;
 			var socket = io.connect();
+			var monVraiNom = "";
 
 			// on connection to server, ask for user's name with an anonymous callback
 			socket.on('connect', function(){
 				// call the server-side function 'adduser' and send one parameter (value of prompt)
-				socket.emit('adduser', prompt("What's your name?"));
+				monVraiNom = prompt("Votre nom : ")
+				socket.emit('adduser',monVraiNom);
 			});
 
 			// listener, whenever the server emits 'updatechat', this updates the chat body 
@@ -49,6 +47,12 @@
 				$.each(data, function(key, value) {
 					$('#users').append('<div>' + key + '</div>');
 				});
+			});
+
+			
+
+			socket.on('refuse', function(data) {
+				console.log(data);
 			});
 
 			// on load of page
@@ -73,6 +77,7 @@
 
 
 	</script>
+	<script src="complete_rewrite_battle.js"></script>
 
 
 </body>
