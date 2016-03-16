@@ -19,9 +19,19 @@ app.get('/', function (req, res) {
   res.sendfile(__dirname + '/index.html');
 });
 
-// usernames which are currently connected to the chat
-var usernames = {numPlayers:0};
-var tanks = [];
+var usernames = {numPlayers: 0}
+
+
+/*socket.on('addtank', function(data) {
+	console.log("nouveau tank a rajouter");
+	console.log(tanks.length);
+	var pos = originatingPositions[tanks.length];
+	console.log(pos);
+	console.log("x: " + pos.x + ", y: " + pos.y);
+	tanks.push(new Tank(pos.x, pos.y, monVraiNom, pos.clr));
+	console.log("nouveau tank a ete rajouter");
+
+});*/
 
 io.sockets.on('connection', function (socket) {
 
@@ -33,31 +43,58 @@ io.sockets.on('connection', function (socket) {
 
 	// when the client emits 'adduser', this listens and executes
 	socket.on('adduser', function(username){
-		// we store the username in the socket session for this client
-		socket.username = username;
-		if(usernames.numPlayers > 4) {
-			socket.emit('refuse','les 4 joueurs sont la');
+		var nom = "";
+		if(usernames.numPlayers > 2) {
+			socket.emit('refuse','les 2 joueurs sont la');
 			return;
 		}
-		// add the client's username to the global list
-		usernames[username] = username;
 		++usernames.numPlayers;
 		//console.log(usernames.numPlayers);
 		// echo to client they've connected
-		socket.emit('addtank', {message: username + ' added', tanks: []});
+		if(usernames.numPlayers == 1) {
+
+			socket.emit('firsttank', {message: username + ' added', tanks: []});
+			nom = "Ryu";
+		} else if(usernames.numPlayers == 2) {
+			socket.emit('secondtank', {});
+			socket.broadcast.emit('addtank', 'SERVER','');
+			nom = "Ken";
+		}
+		usernames[nom] = nom;
 		// echo globally (all clients) that a person has connected
-		socket.broadcast.emit('addtank', 'SERVER', username + ' has connected');
 		// update the list of users in chat, client-side
-		io.sockets.emit('updateusers', usernames);
+		//io.sockets.emit('updateusers', usernames);
 	});
+
+	socket.on('gauche',function(data) {
+		socket.broadcast.emit('enemygauche');
+	});
+
+	socket.on('droite', function(data) {
+		socket.broadcast.emit('enemydroite');
+	});
+
+	socket.on('haut', function(data) {
+		socket.broadcast.emit('enemyhaut');
+	});
+
+	socket.on('bas',function(data){
+		socket.broadcast.emit('enemybas');
+	});
+
+	socket.on('tir', function(data) {
+		socket.broadcast.emit('enemytir');
+	});
+
+
 
 	// when the user disconnects.. perform this
 	socket.on('disconnect', function(){
 		// remove the username from global usernames list
-		delete usernames[socket.username];
+		//delete usernames[socket.username];
+		--usernames.numPlayers;
 		// update list of users in chat, client-side
-		io.sockets.emit('updateusers', usernames);
 		// echo globally that this client has left
-		socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
+		//socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
 	});
 });

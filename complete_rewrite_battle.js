@@ -436,7 +436,7 @@ function start() {
 	cw = canvas.width;
 	ch = canvas.height;
 
-	originatingPositions = [{x:(cw/2),y:(ch-45),clr:"#3523af"},{x:10,y:10}];
+	originatingPositions = [{x:(cw/2),y:(ch-45),clr:"#3523af"},{x:10,y:10, clr:"#ee3322"}, {x: cw/2, y:ch/2-10, clr:"#ddcc33"}, {x: 60, y: ch-290, clr: "darkorange"}];
 	tank = new Tank(cw/2, ch-42-3, "Sharpie");
 	tank.enemy = false;
 	//tank.setNom("FuFu");
